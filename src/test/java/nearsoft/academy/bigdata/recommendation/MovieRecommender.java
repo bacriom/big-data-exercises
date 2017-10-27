@@ -22,13 +22,10 @@ import java.util.zip.GZIPInputStream;
 public class MovieRecommender {
 
 
-    //DataModel model = new FileDataModel(new File("/home/ocrisostomo/Downloads/movies.txt"));
-   // UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
-    //UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1,similarity,model);
-    //UserBasedRecommender recommender = new GenericUserBasedRecommender(model,neighborhood,similarity);
+    //DataModel modelD;
 
-    public MovieRecommender() throws IOException, TasteException {
-
+    public MovieRecommender(String s) throws IOException, TasteException {
+      //  modelD = new FileDataModel(new File(s));
     }
 
    /* public int getTotalReviews(){
@@ -43,12 +40,13 @@ public class MovieRecommender {
     }*/
 
 
-    public static List read() throws IOException {
+   public static void  read() throws IOException {
         HashMap<String,Integer> mapBackPel = new HashMap<String,Integer >();
         HashMap<Integer,String>  mapGoPel = new HashMap<Integer,String>();
         HashMap<String,Integer> mapBackUs = new HashMap<String,Integer >();
         HashMap<Integer,String>  mapGoUs = new HashMap<Integer,String>();
-
+      FileWriter fl = new FileWriter("/home/ocrisostomo/Downloads/movies.txt");
+       PrintWriter pw =new  PrintWriter(fl);
         GZIPInputStream inputStream = null;
         int cont = 1;
         int cont2=1;
@@ -65,12 +63,12 @@ public class MovieRecommender {
                // System.out.println(line);
                 if(org.apache.commons.lang.StringUtils.isNotBlank(line)){
                     String [] aux = line.split(" ");
-
                     if(aux[0].equals("product/productId:")){
                         if(mapGoPel.isEmpty()){
                             mapGoPel.put(cont,aux[1]);
                             mapBackPel.put(aux[1],cont);
                             toAdd = cont+",";
+                            continue;
                         } else if(mapBackPel.containsKey(aux[1])){
                             toAdd+=cont + ",";
                         }else {
@@ -85,13 +83,9 @@ public class MovieRecommender {
                             mapGoUs.put(cont2,aux[1]);
                             mapBackUs.put(aux[1],cont2);
                             toAdd += cont2+",";
-                            continue;
                         } else if(mapBackUs.containsKey(aux[1])){
-                            //toAdd+= cont2 + ",";
                             toAdd+=mapBackUs.get(aux[1])+",";
-
                         }else{
-
                             mapGoUs.put(cont2,aux[1]);
                             mapBackUs.put(aux[1],cont2);
                             toAdd+=cont2 + ",";
@@ -100,66 +94,31 @@ public class MovieRecommender {
 
                     } else if(aux[0].equals("review/score:")){
                         toAdd += aux[1];
+                        String [] datos = null;
+                        datos= toAdd.split(",");
+                      if(datos.length== 3 ){
+                          //plainData.add(toAdd);
+                          System.out.println(toAdd);
+                          //System.out.println(plainData.size());
+
+                          pw.println(toAdd);
+                          toAdd="";
+                      }
+
                     }
-
-
-
-
-                }else {
-                    plainData.add(toAdd);
-                    toAdd="";
-                    System.out.println(plainData.size());
                 }
 
             }
 
-            if (sc.ioException() != null) {
-                throw sc.ioException();
-            }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (sc != null) {
-                sc.close();
-            }
         }
-        return plainData;
-    }
-
-
-
-    public void getFIle(List<String> list) {
-
-        FileWriter fl = null;
-        PrintWriter pw = null;
-
-        try {
-            fl = new FileWriter("/home/ocrisostomo/Downloads/movies.txt");
-            pw = new PrintWriter(fl);
-            for (String obj : list) {
-                pw.println(obj);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (null != fl) {
-                try {
-                    fl.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-
+        pw.close();
 
     }
-
 
 
 
