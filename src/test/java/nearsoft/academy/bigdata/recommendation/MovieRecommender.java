@@ -9,6 +9,7 @@ import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
@@ -21,30 +22,68 @@ import java.util.zip.GZIPInputStream;
 
 public class MovieRecommender {
 
+    int  totalRe=0;
+    DataModel model;
+    UserSimilarity similarity;
+    UserNeighborhood neighborhood;
+    UserBasedRecommender recommender;
 
-    //DataModel modelD;
+    HashMap<String,Integer> mapBackPel = new HashMap<String,Integer >();
+    HashMap<Integer,String>  mapGoPel = new HashMap<Integer,String>();
+    HashMap<String,Integer> mapBackUs = new HashMap<String,Integer >();
+    HashMap<Integer,String>  mapGoUs = new HashMap<Integer,String>();
 
     public MovieRecommender(String s) throws IOException, TasteException {
-      //  modelD = new FileDataModel(new File(s));
+        read();
+        model = new FileDataModel(new File(s));
+        similarity = new PearsonCorrelationSimilarity(model);
+        neighborhood = new ThresholdUserNeighborhood(0.1,similarity,model);
+        recommender = new GenericUserBasedRecommender(model,neighborhood,similarity);
     }
 
-   /* public int getTotalReviews(){
-        int totalItems=0;
-        try {
-   //         totalItems= model.getNumItems();
-        } catch (TasteException e) {
-            e.printStackTrace();
-        }
-        System.out.println(totalItems);
-        return totalItems;
-    }*/
+    public int getTotalReviews() throws TasteException {
+        return totalRe;
+    }
+
+    public int getTotalProducts() throws TasteException {
+        return model.getNumUsers();
+    }
+
+    public int getTotalUsers() throws TasteException {
+        return model.getNumItems();
+    }
+
+    public List <String> getRecommendationsForUser(String user) throws TasteException {
+          List<String> out = new ArrayList<String>();
+          int userK =0;
+          List<String> recomendation = null;
+          //List recomenInt;
+          userK = mapBackUs.get(user);
+         // recomenInt = recommender.recommend(userK,3);
+
+          List<RecommendedItem> ls = recommender.recommend(userK,3);
+        System.out.println(ls.size());
+
+        //  for (Object obj: recomenInt ){
+         //     recomendation.add(mapGoPel.get(obj));
+         // }
+          for(RecommendedItem recIt: ls){
+              System.out.println(recIt);
+              System.out.println((int) recIt.getItemID());
+              System.out.println((int) recIt.getValue());
+              System.out.println(String.valueOf(recIt.getItemID()));
+              System.out.println(String.valueOf(recIt.getValue()));
+
+             recomendation.add(mapGoPel.get((int) recIt.getItemID()));
+          }
+
+        return recomendation;
+    }
 
 
-   public static void  read() throws IOException {
-        HashMap<String,Integer> mapBackPel = new HashMap<String,Integer >();
-        HashMap<Integer,String>  mapGoPel = new HashMap<Integer,String>();
-        HashMap<String,Integer> mapBackUs = new HashMap<String,Integer >();
-        HashMap<Integer,String>  mapGoUs = new HashMap<Integer,String>();
+
+   public  void  read() throws IOException {
+
       FileWriter fl = new FileWriter("/home/ocrisostomo/Downloads/movies.txt");
        PrintWriter pw =new  PrintWriter(fl);
         GZIPInputStream inputStream = null;
@@ -60,7 +99,6 @@ public class MovieRecommender {
 
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
-               // System.out.println(line);
                 if(org.apache.commons.lang.StringUtils.isNotBlank(line)){
                     String [] aux = line.split(" ");
                     if(aux[0].equals("product/productId:")){
@@ -97,12 +135,10 @@ public class MovieRecommender {
                         String [] datos = null;
                         datos= toAdd.split(",");
                       if(datos.length== 3 ){
-                          //plainData.add(toAdd);
-                          System.out.println(toAdd);
-                          //System.out.println(plainData.size());
-
                           pw.println(toAdd);
                           toAdd="";
+                          totalRe++;
+
                       }
 
                     }
@@ -118,8 +154,7 @@ public class MovieRecommender {
         }
         pw.close();
 
+
     }
-
-
 
 }
