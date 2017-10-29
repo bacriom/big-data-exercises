@@ -23,15 +23,15 @@ import java.util.zip.GZIPInputStream;
 public class MovieRecommender {
 
     int  totalRe=0;
-    DataModel model;
+   DataModel model;
     UserSimilarity similarity;
     UserNeighborhood neighborhood;
     UserBasedRecommender recommender;
 
-    HashMap<String,Integer> mapBackPel = new HashMap<String,Integer >();
-    HashMap<Integer,String>  mapGoPel = new HashMap<Integer,String>();
-    HashMap<String,Integer> mapBackUs = new HashMap<String,Integer >();
-    HashMap<Integer,String>  mapGoUs = new HashMap<Integer,String>();
+    HashMap<String,Integer> mapKeyMov = new HashMap<String,Integer >();
+    HashMap<Integer,String>  mapValMov = new HashMap<Integer,String>();
+    HashMap<String,Integer> mapKeyUs = new HashMap<String,Integer >();
+    HashMap<Integer,String>  mapValUs = new HashMap<Integer,String>();
 
     public MovieRecommender(String s) throws IOException, TasteException {
         read();
@@ -56,9 +56,9 @@ public class MovieRecommender {
     public List <String> getRecommendationsForUser(String user) throws TasteException {
           List<String> out = new ArrayList<String>();
           int userK =0;
-          List<String> recomendation = null;
+          List<String> recomendation = new ArrayList<String>();
           //List recomenInt;
-          userK = mapBackUs.get(user);
+          //userK = mapBackUs.get(user);
          // recomenInt = recommender.recommend(userK,3);
 
           List<RecommendedItem> ls = recommender.recommend(userK,3);
@@ -73,8 +73,8 @@ public class MovieRecommender {
               System.out.println((int) recIt.getValue());
               System.out.println(String.valueOf(recIt.getItemID()));
               System.out.println(String.valueOf(recIt.getValue()));
-
-             recomendation.add(mapGoPel.get((int) recIt.getItemID()));
+              //System.out.println(mapGoPel.get((int) recIt.getItemID()));
+             //recomendation.add(mapGoPel.get((int) recIt.getItemID()));
           }
 
         return recomendation;
@@ -84,63 +84,67 @@ public class MovieRecommender {
 
    public  void  read() throws IOException {
 
-      FileWriter fl = new FileWriter("/home/ocrisostomo/Downloads/movies.txt");
-       PrintWriter pw =new  PrintWriter(fl);
+        FileWriter fl = new FileWriter("/home/ocrisostomo/Downloads/movies.txt");
+        PrintWriter pw =new  PrintWriter(fl);
         GZIPInputStream inputStream = null;
-        int cont = 1;
-        int cont2=1;
-        List<String> plainData = new ArrayList();
+        String score;
+        int userIdI=0,movieIdI=0;
+        int keyMov = 0;
+        int keyUs=0;
         Scanner sc = null;
+
         try {
-            inputStream = new GZIPInputStream(new FileInputStream("/home/ocrisostomo/Downloads/movies.txt.gz"));
+            inputStream = new GZIPInputStream(new FileInputStream("/home/ocrisostomo/Downloads/movies.txt.gz"));// read file
             sc = new Scanner(inputStream, "UTF-8");
             String toAdd= new String();
 
-
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
+
                 if(org.apache.commons.lang.StringUtils.isNotBlank(line)){
                     String [] aux = line.split(" ");
-                    if(aux[0].equals("product/productId:")){
-                        if(mapGoPel.isEmpty()){
-                            mapGoPel.put(cont,aux[1]);
-                            mapBackPel.put(aux[1],cont);
-                            toAdd = cont+",";
-                            continue;
-                        } else if(mapBackPel.containsKey(aux[1])){
-                            toAdd+=cont + ",";
-                        }else {
-                            cont++;
-                            mapGoPel.put(cont, aux[1]);
-                            mapBackPel.put(aux[1], cont);
-                            toAdd += cont + ",";
-                        }
-                    } else if(aux[0].equals("review/userId:")){
 
-                        if(mapGoUs.isEmpty() || mapBackUs.isEmpty()){
-                            mapGoUs.put(cont2,aux[1]);
-                            mapBackUs.put(aux[1],cont2);
-                            toAdd += cont2+",";
-                        } else if(mapBackUs.containsKey(aux[1])){
-                            toAdd+=mapBackUs.get(aux[1])+",";
-                        }else{
-                            mapGoUs.put(cont2,aux[1]);
-                            mapBackUs.put(aux[1],cont2);
-                            toAdd+=cont2 + ",";
-                            cont2++;
+
+                    if(aux[0].equals("product/productId:")) {
+
+                        if (!mapKeyMov.containsKey(aux[1]) || mapKeyMov.isEmpty()) {
+                            keyMov++;
+                            mapKeyMov.put(aux[1], keyMov);
+                            mapValMov.put(keyMov, aux[1]);
+                            movieIdI =  mapKeyMov.get(aux[1]);
+
+                        } else {
+                            mapKeyMov.put(aux[1], keyMov);
+                            mapValMov.put(keyMov, aux[1]);
+                            movieIdI =  mapKeyMov.get(aux[1]);
+                        }
+
+                    }else if(aux[0].equals("review/userId:")){
+
+                        if(!mapKeyUs.containsKey(aux[1]) || mapKeyUs.isEmpty()){
+                            keyUs++;
+                            mapKeyUs.put(aux[1], keyUs);
+                            mapValUs.put(keyUs, aux[1]);
+                            userIdI =  mapKeyUs.get(aux[1]);
+
+                        } else {
+
+                            userIdI =  mapKeyUs.get(aux[1]);
+
                         }
 
                     } else if(aux[0].equals("review/score:")){
-                        toAdd += aux[1];
+                        score = aux[1];
+                        toAdd = userIdI +","+movieIdI+","+score;
                         String [] datos = null;
                         datos= toAdd.split(",");
-                      if(datos.length== 3 ){
-                          pw.println(toAdd);
-                          toAdd="";
-                          totalRe++;
 
-                      }
-
+                        if(datos.length== 3 ){
+                           // pw.println(toAdd);
+                            fl.write(toAdd+"\n");
+                            toAdd="";
+                            totalRe++;
+                        }
                     }
                 }
 
@@ -152,6 +156,7 @@ public class MovieRecommender {
         } catch (IOException e) {
             e.printStackTrace();
         }
+       System.out.println(totalRe);
         pw.close();
 
 
