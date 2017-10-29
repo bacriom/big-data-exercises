@@ -46,11 +46,12 @@ public class MovieRecommender {
     }
 
     public int getTotalProducts() throws TasteException {
-        return model.getNumUsers();
+
+        return model.getNumItems();
     }
 
     public int getTotalUsers() throws TasteException {
-        return model.getNumItems();
+        return model.getNumUsers();
     }
 
     public List <String> getRecommendationsForUser(String user) throws TasteException {
@@ -82,7 +83,7 @@ public class MovieRecommender {
 
 
 
-   public  void  read() throws IOException {
+   public  int  read() throws IOException {
 
         FileWriter fl = new FileWriter("/home/ocrisostomo/Downloads/movies.txt");
         PrintWriter pw =new  PrintWriter(fl);
@@ -156,10 +157,10 @@ public class MovieRecommender {
         } catch (IOException e) {
             e.printStackTrace();
         }
-       System.out.println(totalRe);
+
         pw.close();
 
-
+      return totalRe;
     }
 
 }
