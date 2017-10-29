@@ -55,27 +55,23 @@ public class MovieRecommender {
     }
 
     public List <String> getRecommendationsForUser(String user) throws TasteException {
-          List<String> out = new ArrayList<String>();
-          int userK =0;
+
+          int userK;
           List<String> recomendation = new ArrayList<String>();
-          //List recomenInt;
-          //userK = mapBackUs.get(user);
-         // recomenInt = recommender.recommend(userK,3);
-
+          List recomenInt;
+          //back = key go = val
+          System.out.println(mapKeyUs.get(user));
+          userK = mapKeyUs.get(user);
+          recomenInt = recommender.recommend(userK,3);
           List<RecommendedItem> ls = recommender.recommend(userK,3);
-        System.out.println(ls.size());
 
-        //  for (Object obj: recomenInt ){
-         //     recomendation.add(mapGoPel.get(obj));
-         // }
+
+         for (Object obj: recomenInt ){
+              recomendation.add(mapValMov.get(obj));
+         }
+
           for(RecommendedItem recIt: ls){
-              System.out.println(recIt);
-              System.out.println((int) recIt.getItemID());
-              System.out.println((int) recIt.getValue());
-              System.out.println(String.valueOf(recIt.getItemID()));
-              System.out.println(String.valueOf(recIt.getValue()));
-              //System.out.println(mapGoPel.get((int) recIt.getItemID()));
-             //recomendation.add(mapGoPel.get((int) recIt.getItemID()));
+             recomendation.add(mapValMov.get((int) recIt.getItemID()));
           }
 
         return recomendation;
@@ -159,7 +155,7 @@ public class MovieRecommender {
         }
 
         pw.close();
-
+       System.out.println("termino");
       return totalRe;
     }
 
